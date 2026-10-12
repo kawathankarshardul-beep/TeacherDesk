@@ -63,3 +63,24 @@ td { border-bottom-color: #263750 !important; }
 tbody tr:hover { background: #17243a !important; }
 .primary-btn, .login-card .primary-btn { background: #16a99a !important; color: #061b20 !important; font-weight: 800 !important; }
 .nav-item.active { background: #123b43 !important; color: #65e1d0 !important; }
+.ai-editable-output {
+  display: block; width: 100%; min-height: 420px; box-sizing: border-box;
+  padding: 16px; border: 1px solid #d6dbe5; border-radius: 12px;
+  background: #fff; color: #182033; font: 14px/1.65 ui-monospace, SFMono-Regular, Menlo, monospace;
+  resize: vertical; white-space: pre-wrap;
+}
+@media print {
+  .sidebar, .topbar, .class-switch, .page-heading, .nav-item, .primary-btn, .secondary-btn,
+  .ai-form, .section-heading button { display: none !important; }
+  .main, .content, .panel { width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; border: 0 !important; }
+  .ai-editable-output { border: 0; min-height: auto; resize: none; overflow: visible; }
+}
+.teaching-dropzone{position:relative;display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;min-height:135px;padding:22px;border:2px dashed #aab5c7;border-radius:16px;background:#f8faff;text-align:center;color:#243047;transition:background .15s,border-color .15s}
+.teaching-dropzone.dragging{background:#edf4ff;border-color:#4776df}
+.teaching-dropzone input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.teaching-dropzone strong{font-size:16px}
+.teaching-dropzone span{font-size:12px;color:#68758a}
+.teaching-dropzone ul{position:relative;z-index:1;align-self:stretch;text-align:left;margin:8px 0 0;padding-left:20px;pointer-events:none;overflow-wrap:anywhere}
+.teaching-dropzone li{padding:5px 0}
+.teaching-dropzone li button{pointer-events:auto}
+@media(max-width:640px){.teaching-dropzone{padding:16px;min-height:115px}}
