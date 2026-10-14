@@ -30,13 +30,17 @@ export function teachingPlanGuidance(mode, setup) {
 
 export function isUsableTeachingResponse(mode, response, expectedQuestionCount = 1) {
   const text = String(response || "").trim();
-  if (text.length < 300) return false;
 
   if (mode === "worksheet") {
     if (/write a question that tests this syllabus point|marks:\s*_{2,}/i.test(text)) return false;
-    const numberedQuestions = text.match(/^\s*(?:(?:Q|Question)\s*)?\d{1,2}[.)]\s+\S.+$/gim) || [];
-    return numberedQuestions.length >= expectedQuestionCount;
+    const questionSection = text.split(/^\s*(?:#{1,6}\s*)?(?:answer key|answers|solutions)\b/im, 1)[0];
+    const numberedQuestions = questionSection.match(
+      /^\s*(?:[-*]\s*)?(?:\*\*)?(?:(?:question|q)\s*)?\d{1,2}[.):](?:\*\*)?\s*\S.+$/gim
+    ) || [];
+    return numberedQuestions.length >= Math.max(1, expectedQuestionCount);
   }
+
+  if (text.length < 300) return false;
 
   if (mode === "lesson" || mode === "revision") {
     return /learning objectives?|learning outcomes?/i.test(text)

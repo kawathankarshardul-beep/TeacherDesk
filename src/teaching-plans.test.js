@@ -102,3 +102,18 @@ ${"Use complete sentences and support answers with evidence from the supplied sy
   assert.equal(isUsableTeachingResponse("worksheet", valid, 2), true);
   assert.equal(isUsableTeachingResponse("worksheet", valid, 3), false);
 });
+
+test("worksheet response validation accepts common markdown and question-label formats", () => {
+  const markdownWorksheet = `# Worksheet
+**1.** **MCQ:** Which material was used to build houses?
+**Question 2:** Explain why archaeologists study bones.
+3) Give one detail from the chapter.
+## Answer Key
+1. Bricks.
+2. To understand diets.
+`;
+
+  assert.equal(isUsableTeachingResponse("worksheet", markdownWorksheet, 3), true);
+  assert.equal(isUsableTeachingResponse("worksheet", markdownWorksheet, 4), false);
+  assert.equal(isUsableTeachingResponse("worksheet", "1. What happened?", 1), true);
+});

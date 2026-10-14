@@ -99,11 +99,12 @@ For each game include the syllabus-linked objective, player/team setup, exact ma
       .filter((type): type is string => typeof type === "string")
       .slice(0, 8)
       .join(", ");
-    return `Create exactly ${count} student-ready worksheet questions about the supplied topic and syllabus.
+    return `Create exactly ${count} complete, student-ready worksheet questions about the supplied topic and syllabus.
 Question types requested: ${types || "a varied mix"}.
+Output format is mandatory: put each question on its own line, numbered consecutively from 1. through ${count}. Put the actual question text on the same line as its number. Do not output question templates, instructions to the teacher to write questions, or blank question placeholders.
 Use only the supplied syllabus for facts. Label marks for each question. ${
       payload.includeAnswerKey
-        ? "Add a separate answer key based only on the provided syllabus; mark uncertain or underspecified answers for teacher verification."
+        ? "After all questions, add a separate heading `Answer Key` and number its answers separately. The answer key numbers must not replace or interrupt the question numbering. Base answers only on the provided syllabus; mark uncertain or underspecified answers for teacher verification."
         : "Do not include an answer key."
     }`;
   }
