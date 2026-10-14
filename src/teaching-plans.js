@@ -28,9 +28,15 @@ export function teachingPlanGuidance(mode, setup) {
   ].join("\n");
 }
 
-export function isUsableTeachingResponse(mode, response) {
+export function isUsableTeachingResponse(mode, response, expectedQuestionCount = 1) {
   const text = String(response || "").trim();
   if (text.length < 300) return false;
+
+  if (mode === "worksheet") {
+    if (/write a question that tests this syllabus point|marks:\s*_{2,}/i.test(text)) return false;
+    const numberedQuestions = text.match(/^\s*(?:(?:Q|Question)\s*)?\d{1,2}[.)]\s+\S.+$/gim) || [];
+    return numberedQuestions.length >= expectedQuestionCount;
+  }
 
   if (mode === "lesson" || mode === "revision") {
     return /learning objectives?|learning outcomes?/i.test(text)

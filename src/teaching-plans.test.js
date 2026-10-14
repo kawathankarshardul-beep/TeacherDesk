@@ -88,3 +88,17 @@ ${"Teacher prompts and student actions. ".repeat(12)}`), true);
 Scoring awards points for evidence. The win condition is reaching 8 points first.`), true);
   assert.equal(isUsableTeachingResponse("gameideas", `Game 1: discuss the topic. ${"Generic activity suggestion. ".repeat(12)}`), false);
 });
+
+test("worksheet response validation rejects placeholders and requires requested numbered questions", () => {
+  const placeholder = `QUESTIONS
+1. [MCQs] Bricks, Bread and Bones: Write a question that tests this syllabus point: . (Marks: ____)
+${"Teacher template. ".repeat(20)}`;
+  const valid = `WORKSHEET
+1. Which material was commonly used to build houses in the Harappan cities? (1 mark)
+2. Explain why historians study bones found at archaeological sites. (2 marks)
+${"Use complete sentences and support answers with evidence from the supplied syllabus. ".repeat(8)}`;
+
+  assert.equal(isUsableTeachingResponse("worksheet", placeholder, 2), false);
+  assert.equal(isUsableTeachingResponse("worksheet", valid, 2), true);
+  assert.equal(isUsableTeachingResponse("worksheet", valid, 3), false);
+});

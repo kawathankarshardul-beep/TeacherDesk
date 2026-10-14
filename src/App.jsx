@@ -849,14 +849,27 @@ export default function App() {
       if (error) throw error;
 
       if (!data?.text) throw new Error(data?.error || "The AI endpoint returned no content.");
-      if (!isUsableTeachingResponse(requestedMode, data.text)) {
-        throw new Error("The AI endpoint returned an incomplete or non-lesson response.");
+      const expectedQuestionCount = requestedMode === "worksheet" ? Number(payload.count) : 1;
+      if (!isUsableTeachingResponse(requestedMode, data.text, expectedQuestionCount)) {
+        throw new Error(requestedMode === "worksheet"
+          ? `The AI endpoint did not return ${expectedQuestionCount} complete numbered questions.`
+          : "The AI endpoint returned an incomplete or non-lesson response.");
       }
 
       setAiOutput(data.text);
       setAiOutputMode(requestedMode);
 
     } catch (error) {
+      let failureMessage = errText(error);
+      if (error?.context instanceof Response) {
+        try {
+          const responseBody = await error.context.clone().json();
+          if (typeof responseBody?.error === "string") failureMessage = responseBody.error;
+        } catch {
+          // Keep the SDK error message when the edge-function response is not JSON.
+        }
+      }
+
       // Honest offline template mode: this is not represented as AI-generated content.
       const activeAiMode = modeOverride || aiMode;
       const offlineSyllabus = [
@@ -864,12 +877,7 @@ export default function App() {
         ...teachingFiles.map(file => file.text).filter(Boolean)
       ].filter(Boolean).join("\n");
       if (activeAiMode === "worksheet") {
-        const types = (aiQuestionTypes.length ? aiQuestionTypes : ["MCQ", "Short answer", "Give reasons"]).slice(0, 8);
-        const count = Math.min(30, Math.max(1, Number(aiCount) || 12));
-        const qs = Array.from({ length: count }, (_, i) => `${i + 1}. [${types[i % types.length]}] ${aiChapter}: Write a question that tests this syllabus point: ${aiSyllabus.split(/\n|[.;]/).filter(Boolean)[i % Math.max(1, aiSyllabus.split(/\n|[.;]/).filter(Boolean).length)] || aiSyllabus}. (Marks: ____ )`);
-        setAiOutput(`TEACHERDESK WORKSHEET — TEMPLATE MODE\nClass: ${activeClass} | Subject: ${aiSubject}\nChapter: ${aiChapter}\nSyllabus supplied by teacher: ${aiSyllabus}\n\nQUESTIONS\n${qs.join("\n\n")}${aiAnswerKey ? "\n\nANSWER KEY\nTeacher: complete and verify the answer key before distributing. This offline template does not invent factual answers." : ""}\n\nExtra instructions: ${aiInstructions || "None"}`);
-        setAiOutputMode(activeAiMode);
-        setNotice(`AI service unavailable (${errText(error)}). Created an editable worksheet template instead; it is not AI-generated.`);
+        setNotice(`Worksheet generation failed: ${failureMessage}. No placeholder questions were created. Check the deployed Supabase teacherdesk-ai function and its OpenRouter settings, then try again.`);
       } else if (activeAiMode === "lesson" || activeAiMode === "revision") {
         setAiOutput(buildOfflineTeachingPlan({
           mode: activeAiMode,
@@ -883,7 +891,7 @@ export default function App() {
           materials: aiMaterials
         }));
         setAiOutputMode(activeAiMode);
-        setNotice(`AI service unavailable (${errText(error)}). Created an editable lesson/revision template instead; verify it against your syllabus.`);
+        setNotice(`AI service unavailable (${failureMessage}). Created an editable lesson/revision template instead; verify it against your syllabus.`);
       } else if (activeAiMode === "gameideas") {
         setAiOutput(buildOfflineTeachingPlan({
           mode: activeAiMode,
@@ -897,9 +905,9 @@ export default function App() {
           materials: aiMaterials
         }));
         setAiOutputMode(activeAiMode);
-        setNotice(`AI service unavailable (${errText(error)}). Created a playable game pack template instead; verify card content against the syllabus.`);
+        setNotice(`AI service unavailable (${failureMessage}). Created a playable game pack template instead; verify card content against the syllabus.`);
       } else {
-        setNotice(`No AI response (${errText(error)}). Check the deployed teacherdesk-ai function and its provider configuration.`);
+        setNotice(`No AI response: ${failureMessage}. Check the deployed teacherdesk-ai function and its provider configuration.`);
       }
     } finally { setAiBusy(false); }
 
